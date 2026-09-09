@@ -71,7 +71,7 @@ namespace IterativeProject1.Controllers
             return Ok(bookings);
         }
 
-        [HttpGet] // Why no name?
+        [HttpGet] 
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll()
         {
