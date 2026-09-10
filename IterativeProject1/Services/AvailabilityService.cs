@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IterativeProject1.DTOs;
-using IterativeProject1.Repositories;
-using IterativeProject1.Models;
 using IterativeProject1.Helpers;
+using IterativeProject1.Models;
+using IterativeProject1.Repositories;
 
 
 namespace IterativeProject1.Services
 {
-    public class AvailabilityService  // : IAvailabilityService
+    public class AvailabilityService : IAvailabilityService
     {
         private readonly IAvailabilityRepository _availabilityRepository;
         private readonly IBookingRepository _bookingRepository;
@@ -35,9 +35,12 @@ namespace IterativeProject1.Services
                 return await _availabilityRepository.Create(availability);
             }
 
-        public async Task<IEnumerable<AvailabilitySlotDto>>GetOpenSlots(int providerId, DateTime date, int slotDurationMinutes)
+        public async Task<AvailableSlotsResponseDto> GetOpenSlots(int providerId, DateTime date, int slotDurationMinutes)
         {
-            var availabilities = (await _availabilityRepository.GetByProvider(providerId)).Where(a => a.SpecificDate == date.Date || a.DayOfWeek == (byte)date.DayOfWeek);
+            var allAvailabilities = (await _availabilityRepository.GetByProviderIncludingInactive(providerId))
+                .Where(a => a.SpecificDate == date.Date || a.DayOfWeek == (byte)date.DayOfWeek);
+
+            var availabilities = allAvailabilities.Where(a => a.IsActive);
 
             var dayStart = date.Date;
             var dayEnd = date.Date.AddDays(1);
@@ -45,12 +48,32 @@ namespace IterativeProject1.Services
 
             var slots = TimeSlotHelper.GenerateOpenSlots(date, availabilities, existingBookings, slotDurationMinutes);
 
-            return slots.Select(s => new AvailabilitySlotDto
+            string message;
+            if (!allAvailabilities.Any())
+                message = "No availability has been set for this provider on this date.";
+            else if (!availabilities.Any())
+                message = "Availability exists for this date but has been deactivated.";
+            else if (slots.Count == 0)
+                message = "Availability exists but all slots are already booked.";
+            else
+                message = "Slots available.";
+
+            return new AvailableSlotsResponseDto
             {
                 ProviderId = providerId,
-                SlotStart = s.Start,
-                SlotEnd = s.End
-            });
+                Date = date,
+                SlotDurationMinutes = slotDurationMinutes,
+                TotalAvailabilityWindowsFound = availabilities.Count(),
+                InactiveAvailabilityWindowsFound = allAvailabilities.Count() - availabilities.Count(),
+                TotalOpenSlots = slots.Count,
+                Message = message,
+                Slots = slots.Select(s => new AvailabilitySlotDto
+                {
+                    ProviderId = providerId,
+                    SlotStart = s.Start,
+                    SlotEnd = s.End
+                }).ToList()
+            };
         }
 
         public async Task<bool> Delete(int id)
