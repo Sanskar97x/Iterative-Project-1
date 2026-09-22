@@ -65,6 +65,15 @@ namespace IterativeProject1.Controllers
             if (!success) return NotFound(); // 404 : The requested resource was not found
             return NoContent(); // 204 : the operation succeed but there is no data to return
         }
- 
+
+        [HttpGet("mine")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetMine()
+        {
+            var providerId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var availabilities = await _availabilityService.GetMine(providerId);
+            return Ok(availabilities);
+        }
+
     }
 }
