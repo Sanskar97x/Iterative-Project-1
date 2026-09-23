@@ -75,5 +75,13 @@ namespace IterativeProject1.Controllers
             return Ok(availabilities);
         }
 
+        [HttpGet("slot-statuses")]
+        public async Task<IActionResult> GetSlotStatuses([FromQuery] int providerId, [FromQuery] DateTime date, [FromQuery] int slotDurationMinutes = 30)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _availabilityService.GetSlotStatuses(providerId, date, slotDurationMinutes, userId);
+            return Ok(result);
+        }
+
     }
 }
