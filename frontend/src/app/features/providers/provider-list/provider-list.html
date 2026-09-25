@@ -1,0 +1,29 @@
+<div class="min-h-screen bg-[#F7F5F0] p-6">
+  <div class="max-w-2xl mx-auto">
+    <a routerLink="/" class="text-sm text-[#6B7280] underline underline-offset-2">← Back to dashboard</a>
+    <h1 class="mt-4 text-2xl font-serif text-[#16241F]">Choose a provider</h1>
+
+    @if (loading()) {
+      <p class="mt-6 text-sm text-[#6B7280]">Loading providers…</p>
+    }
+
+    @if (errorMessage()) {
+      <p class="mt-6 text-sm text-red-700">{{ errorMessage() }}</p>
+    }
+
+    @if (!loading() && providers().length === 0 && !errorMessage()) {
+      <p class="mt-6 text-sm text-[#6B7280]">No providers are available right now.</p>
+    }
+
+    <div class="mt-6 space-y-3">
+      @for (provider of providers(); track provider.userId) {
+        <a [routerLink]="['/providers', provider.userId, 'book']" class="block p-4 bg-white border border-[#D8D4C7] hover:border-[#C9A227] transition-colors">
+          <h2 class="font-serif text-[#16241F]">{{ provider.fullName }}</h2>
+          @if (provider.profession) {
+            <p class="mt-1 text-sm text-[#6B7280]">{{ provider.profession }}</p>
+          }
+        </a>
+      }
+    </div>
+  </div>
+</div>

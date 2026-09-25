@@ -1,0 +1,42 @@
+<div class="min-h-screen bg-[#F7F5F0] p-6">
+  <div class="max-w-3xl mx-auto">
+    <a routerLink="/" class="text-sm text-[#6B7280] underline underline-offset-2">← Back to dashboard</a>
+    <h1 class="mt-4 text-2xl font-serif text-[#16241F]">All bookings</h1>
+
+    @if (loading()) {
+      <p class="mt-6 text-sm text-[#6B7280]">Loading…</p>
+    }
+
+    @if (errorMessage()) {
+      <p class="mt-6 text-sm text-red-700">{{ errorMessage() }}</p>
+    }
+
+    @if (!loading() && bookings().length === 0) {
+      <p class="mt-6 text-sm text-[#6B7280]">No bookings yet.</p>
+    }
+
+    <div class="mt-6 space-y-3">
+      @for (booking of bookings(); track booking.id) {
+        <div class="p-4 bg-white border border-[#D8D4C7] flex items-center justify-between gap-4">
+          <div>
+            <p class="font-serif text-[#16241F]">{{ booking.startTime | date:'medium' }}</p>
+            <p class="text-sm text-[#6B7280]">Client #{{ booking.clientId }}</p>
+            @if (booking.notes) {
+              <p class="mt-1 text-sm text-[#6B7280]">{{ booking.notes }}</p>
+            }
+          </div>
+
+       <select
+  (change)="updateStatus(booking.id, $any($event.target).value)"
+  [disabled]="updatingId() === booking.id"
+  class="border border-[#D8D4C7] px-2 py-1.5 text-sm disabled:opacity-60"
+>
+  @for (status of statuses; track status) {
+    <option [value]="status" [selected]="status === booking.status">{{ status }}</option>
+  }
+</select>
+        </div>
+      }
+    </div>
+  </div>
+</div>

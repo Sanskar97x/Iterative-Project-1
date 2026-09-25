@@ -1,0 +1,78 @@
+<div class="min-h-screen grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] bg-[#F7F5F0]">
+
+  <!-- Left: brand panel -->
+  <div class="hidden lg:flex flex-col justify-between p-12 bg-[#16241F] text-[#F7F5F0] relative overflow-hidden">
+    <div class="absolute inset-0 opacity-[0.07]"
+         style="background-image: repeating-linear-gradient(0deg, transparent, transparent 47px, #F7F5F0 47px, #F7F5F0 48px); background-position: 0 20px;">
+    </div>
+
+    <div class="relative">
+      <span class="font-mono text-sm tracking-wide text-[#C9A227]">Schedule</span>
+      <h1 class="mt-4 text-4xl leading-tight font-serif">
+        Every appointment,<br />kept in order.
+      </h1>
+    </div>
+
+    <div class="relative font-mono text-xs text-[#F7F5F0]/60 leading-relaxed">
+      09:00 — client consult<br />
+      10:30 — follow-up<br />
+      13:00 — new booking<br />
+      <span class="text-[#C9A227]">15:30 — open</span>
+    </div>
+  </div>
+
+  <!-- Right: form panel -->
+  <div class="flex items-center justify-center p-8">
+    <div class="w-full max-w-sm">
+      <h2 class="text-2xl font-serif text-[#16241F]">Sign in</h2>
+      <p class="mt-1 text-sm text-[#6B7280]">Enter your details to view your bookings.</p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="mt-8 space-y-5">
+        <div>
+          <label for="identifier" class="block text-sm text-[#16241F]">Username or email</label>
+          <input
+            id="identifier"
+            type="text"
+            formControlName="identifier"
+            autocomplete="username"
+            class="mt-1.5 w-full rounded-none border border-[#D8D4C7] bg-white px-3 py-2 text-[#16241F] focus:outline-none focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227]"
+          />
+          @if (form.get('identifier')?.invalid && form.get('identifier')?.touched) {
+            <p class="mt-1 text-xs text-red-700">This field is required.</p>
+          }
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm text-[#16241F]">Password</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            autocomplete="current-password"
+            class="mt-1.5 w-full rounded-none border border-[#D8D4C7] bg-white px-3 py-2 text-[#16241F] focus:outline-none focus:border-[#C9A227] focus:ring-1 focus:ring-[#C9A227]"
+          />
+          @if (form.get('password')?.invalid && form.get('password')?.touched) {
+            <p class="mt-1 text-xs text-red-700">This field is required.</p>
+          }
+        </div>
+
+        @if (errorMessage()) {
+          <p class="text-sm text-red-700">{{ errorMessage() }}</p>
+        }
+
+        <button
+          type="submit"
+          [disabled]="loading()"
+          class="w-full bg-[#16241F] text-[#F7F5F0] py-2.5 text-sm hover:bg-[#213A30] disabled:opacity-60 transition-colors"
+        >
+          {{ loading() ? 'Signing in…' : 'Sign in' }}
+        </button>
+      </form>
+
+      <p class="mt-6 text-sm text-[#6B7280]">
+        New here?
+        <a routerLink="/register" class="text-[#16241F] underline underline-offset-2">Create an account</a>
+      </p>
+    </div>
+  </div>
+</div>

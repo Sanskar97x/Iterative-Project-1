@@ -1,0 +1,108 @@
+<div class="min-h-screen bg-[#F7F5F0] p-6">
+  <div class="max-w-xl mx-auto">
+    <a routerLink="/providers" class="text-sm text-[#6B7280] underline underline-offset-2">← Back to providers</a>
+
+    @if (bookedSlot()) {
+      <div class="mt-6 p-6 bg-white border border-[#C9A227]">
+        <h1 class="text-2xl font-serif text-[#16241F]">Booking requested</h1>
+        <p class="mt-2 text-sm text-[#6B7280]">
+          Your slot on {{ bookedSlot()!.slotStart | date:'medium' }} has been requested and is pending confirmation.
+        </p>
+        <button (click)="goToMyBookings()" class="mt-4 bg-[#16241F] text-[#F7F5F0] py-2 px-4 text-sm hover:bg-[#213A30] transition-colors">
+          View my bookings
+        </button>
+      </div>
+    } @else {
+      <h1 class="mt-4 text-2xl font-serif text-[#16241F]">Pick a date</h1>
+
+      <div class="mt-4 bg-white border border-[#D8D4C7] p-4">
+        <div class="flex items-center justify-between mb-3">
+          <button (click)="changeMonth(-1)" class="text-sm text-[#16241F] px-2 py-1 hover:bg-[#F7F5F0]">‹</button>
+          <span class="font-serif text-[#16241F]">{{ monthLabel() }}</span>
+          <button (click)="changeMonth(1)" class="text-sm text-[#16241F] px-2 py-1 hover:bg-[#F7F5F0]">›</button>
+        </div>
+
+        <div class="grid grid-cols-7 gap-1 text-center text-xs text-[#6B7280] mb-1">
+          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+        </div>
+
+        <div class="grid grid-cols-7 gap-1">
+          @for (cell of calendarCells(); track cell.key) {
+            @if (!cell.date) {
+              <div></div>
+            } @else {
+              <button
+                (click)="selectDate(cell)"
+                class="aspect-square flex items-center justify-center rounded-full text-sm transition-colors"
+                [class.bg-emerald-100]="availableDateKeys().has(cell.key) && !cell.isPast && selectedDateKey() !== cell.key"
+                [class.text-emerald-900]="availableDateKeys().has(cell.key) && !cell.isPast && selectedDateKey() !== cell.key"
+                [class.font-semibold]="availableDateKeys().has(cell.key) && !cell.isPast"
+                [class.bg-[#16241F]]="selectedDateKey() === cell.key"
+                [class.text-[#F7F5F0]]="selectedDateKey() === cell.key"
+                [class.text-[#D8D4C7]]="cell.isPast"
+                [class.text-[#16241F]]="!availableDateKeys().has(cell.key) && !cell.isPast && selectedDateKey() !== cell.key"
+                [class.ring-1]="cell.isToday && selectedDateKey() !== cell.key"
+                [class.ring-[#C9A227]]="cell.isToday && selectedDateKey() !== cell.key"
+                [class.hover:bg-emerald-200]="availableDateKeys().has(cell.key) && !cell.isPast && selectedDateKey() !== cell.key"
+              >
+                {{ cell.date.getDate() }}
+              </button>
+            }
+          }
+        </div>
+
+        @if (calendarLoading()) {
+          <p class="mt-2 text-xs text-[#6B7280]">Checking availability…</p>
+        }
+
+        <div class="mt-3 flex items-center gap-2 text-xs text-[#6B7280]">
+          <span class="w-3 h-3 rounded-full bg-emerald-100 border border-emerald-300 inline-block"></span>
+          Has open slots
+        </div>
+      </div>
+
+      @if (selectedDateKey()) {
+        <div class="mt-6">
+          <h2 class="text-lg font-serif text-[#16241F]">
+            Times on {{ selectedDateKey() }}
+          </h2>
+
+          @if (slotsLoading()) {
+            <p class="mt-3 text-sm text-[#6B7280]">Loading slots…</p>
+          }
+
+          @if (errorMessage()) {
+            <p class="mt-3 text-sm text-red-700">{{ errorMessage() }}</p>
+          }
+
+          @if (!slotsLoading() && slots().length === 0 && !errorMessage()) {
+            <p class="mt-3 text-sm text-[#6B7280]">{{ message() }}</p>
+          }
+
+          <div class="mt-3 grid grid-cols-3 gap-3">
+            @for (slot of slots(); track slot.slotStart) {
+              <button
+                (click)="bookSlot(slot)"
+                [disabled]="booking()"
+                class="p-3 bg-sky-50 border border-sky-300 hover:bg-emerald-50 hover:border-emerald-400 text-sm text-[#16241F] font-medium disabled:opacity-60 transition-colors"
+              >
+                {{ slot.slotStart | date:'shortTime' }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@if (unavailablePopup()) {
+  <div class="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50" (click)="closePopup()">
+    <div class="bg-white p-6 max-w-xs w-full text-center" (click)="$event.stopPropagation()">
+      <p class="text-[#16241F]">{{ unavailablePopup() }}</p>
+      <button (click)="closePopup()" class="mt-4 bg-[#16241F] text-[#F7F5F0] py-2 px-4 text-sm hover:bg-[#213A30] transition-colors">
+        OK
+      </button>
+    </div>
+  </div>
+}

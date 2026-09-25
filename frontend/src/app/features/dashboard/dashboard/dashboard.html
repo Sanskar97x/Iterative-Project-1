@@ -1,0 +1,42 @@
+<div class="min-h-screen bg-[#F7F5F0]">
+  <header class="border-b border-[#D8D4C7] bg-white px-6 py-4 flex items-center justify-between">
+    <span class="font-serif text-lg text-[#16241F]">Schedule</span>
+    <div class="flex items-center gap-4 text-sm">
+      <span class="text-[#6B7280]">{{ authService.user()?.fullName }}</span>
+      <span class="px-2 py-0.5 text-xs bg-[#16241F] text-[#F7F5F0]">{{ authService.role() }}</span>
+      <button (click)="authService.logout()" class="text-[#16241F] underline underline-offset-2">
+        Log out
+      </button>
+    </div>
+  </header>
+
+  <main class="p-6 max-w-3xl mx-auto">
+    <h1 class="text-2xl font-serif text-[#16241F]">
+      Welcome, {{ authService.user()?.fullName }}
+    </h1>
+
+    <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      @if (authService.role() === 'Client') {
+        <a routerLink="/providers" class="block p-5 bg-white border border-[#D8D4C7] hover:border-[#C9A227] transition-colors">
+          <h2 class="font-serif text-[#16241F]">Book an appointment</h2>
+          <p class="mt-1 text-sm text-[#6B7280]">Find a provider and pick an open slot.</p>
+        </a>
+        <a routerLink="/bookings/mine" class="block p-5 bg-white border border-[#D8D4C7] hover:border-[#C9A227] transition-colors">
+          <h2 class="font-serif text-[#16241F]">My bookings</h2>
+          <p class="mt-1 text-sm text-[#6B7280]">View, cancel, or reschedule your appointments.</p>
+        </a>
+      }
+
+      @if (authService.role() === 'Admin') {
+        <a routerLink="/admin/availability" class="block p-5 bg-white border border-[#D8D4C7] hover:border-[#C9A227] transition-colors">
+          <h2 class="font-serif text-[#16241F]">Manage availability</h2>
+          <p class="mt-1 text-sm text-[#6B7280]">Set the times you're open for bookings.</p>
+        </a>
+        <a routerLink="/admin/bookings" class="block p-5 bg-white border border-[#D8D4C7] hover:border-[#C9A227] transition-colors">
+          <h2 class="font-serif text-[#16241F]">All bookings</h2>
+          <p class="mt-1 text-sm text-[#6B7280]">Review and update booking statuses.</p>
+        </a>
+      }
+    </div>
+  </main>
+</div>
