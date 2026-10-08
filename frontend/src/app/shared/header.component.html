@@ -1,0 +1,28 @@
+<header class="app-header" *ngIf="authService.isLoggedIn()">
+  <div class="header-left">
+    <a routerLink="/" class="brand">BookingApp</a>
+
+    <nav class="nav-links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Dashboard
+      </a>
+
+      <ng-container *ngIf="authService.role() === 'Client'">
+        <a routerLink="/providers" routerLinkActive="active">Find a Provider</a>
+        <a routerLink="/bookings/mine" routerLinkActive="active">My Bookings</a>
+      </ng-container>
+
+      <ng-container *ngIf="authService.role() === 'Admin'">
+        <a routerLink="/admin/bookings" routerLinkActive="active">All Bookings</a>
+        <a routerLink="/admin/availability" routerLinkActive="active">Availability</a>
+      </ng-container>
+    </nav>
+  </div>
+
+  <div class="header-right">
+    <app-notification-bell *ngIf="authService.role() === 'Admin'"></app-notification-bell>
+
+    <span class="user-name">{{ authService.user()?.fullName }}</span>
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </div>
+</header>

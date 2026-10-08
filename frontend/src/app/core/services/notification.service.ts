@@ -19,6 +19,10 @@ export class NotificationService {
   private unreadCountSubject = new BehaviorSubject<number>(0);
   unreadCount$ = this.unreadCountSubject.asObservable();
 
+  private normalize(raw: any): AppNotification {
+  return { ...raw, id: raw.id ?? raw.notificationId };
+}
+
   async start(): Promise<void> {
     if (this.hubConnection) {
       return; // already connected
@@ -31,11 +35,11 @@ export class NotificationService {
       .withAutomaticReconnect()
       .build();
 
-    this.hubConnection.on('ReceiveNotification', (notification: AppNotification) => {
-      const current = this.notificationsSubject.value;
-      this.notificationsSubject.next([notification, ...current]);
-      this.unreadCountSubject.next(this.unreadCountSubject.value + 1);
-    });
+  this.hubConnection.on('ReceiveNotification', (raw: any) => {
+  const notification = this.normalize(raw);
+  this.notificationsSubject.next([notification, ...this.notificationsSubject.value]);
+  this.unreadCountSubject.next(this.unreadCountSubject.value + 1);
+});
 
     try {
       await this.hubConnection.start();
@@ -56,30 +60,62 @@ export class NotificationService {
   }
 
 private async loadInitialState(): Promise<void> {
-  this.http.get<AppNotification[]>(`${environment.apiUrl}/Notifications`)
-    .subscribe(list => this.notificationsSubject.next(list));
+ this.http.get<any[]>(`${environment.apiUrl}/Notifications`)
+  .subscribe(list => this.notificationsSubject.next(list.map(n => this.normalize(n))));
 
   this.http.get<{ unreadCount: number }>(`${environment.apiUrl}/Notifications/unread-count`)
     .subscribe(res => this.unreadCountSubject.next(res.unreadCount));
 }
 
-  markAsRead(id: number): void {
-     this.http.patch(`${environment.apiUrl}/Notifications/${id}/read`, {})
-      .subscribe(() => {
+markAsRead(id: number): void {
+  const notification = this.notificationsSubject.value.find(n => n.id === id);
+  if (!notification || notification.isRead) return;
+
+  this.http.patch(`${environment.apiUrl}/Notifications/${id}/read`, {})
+    .subscribe({
+      next: () => {
         const updated = this.notificationsSubject.value.map(n =>
           n.id === id ? { ...n, isRead: true } : n
         );
         this.notificationsSubject.next(updated);
         this.unreadCountSubject.next(Math.max(0, this.unreadCountSubject.value - 1));
-      });
-  }
-
-  markAllAsRead(): void {
-    this.http.patch(`${environment.apiUrl}/Notifications/read-all`, {})
-      .subscribe(() => {
+      },
+      error: err => console.error('markAsRead failed', err)
+    });
+}
+markAllAsRead(): void {
+  this.http.patch(`${environment.apiUrl}/Notifications/read-all`, {})
+    .subscribe({
+      next: () => {
         const updated = this.notificationsSubject.value.map(n => ({ ...n, isRead: true }));
         this.notificationsSubject.next(updated);
         this.unreadCountSubject.next(0);
-      });
+      },
+      error: err => console.error('markAllAsRead failed', err)
+    });
+}
+
+markAsUnread(id: number): void {
+  const notification = this.notificationsSubject.value.find(n => n.id === id);
+  console.log('markAsUnread called', id, notification);
+
+  if (!notification || !notification.isRead) {
+    console.log('guard returned early');
+    return;
   }
+
+  this.http.patch(`${environment.apiUrl}/Notifications/${id}/Unread`, {})
+    .subscribe({
+      next: () => {
+        console.log('PATCH success, updating state');
+        const updated = this.notificationsSubject.value.map(n =>
+          n.id === id ? { ...n, isRead: false } : n
+        );
+        this.notificationsSubject.next(updated);
+        this.unreadCountSubject.next(this.unreadCountSubject.value + 1);
+      },
+      error: err => console.error('PATCH failed', err)
+    });
+}
+
 }

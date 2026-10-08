@@ -1,0 +1,40 @@
+<div class="notification-bell">
+  <button (click)="toggleDropdown()" class="bell-btn">
+    🔔
+    <span *ngIf="(notificationService.unreadCount$ | async)! > 0" class="badge">
+      {{ notificationService.unreadCount$ | async }}
+    </span>
+  </button>
+
+   <div class="dropdown" *ngIf="isOpen">
+    <div class="dropdown-header">
+      <span class="dropdown-title">Notifications</span>
+      <button class="mark-all-btn" (click)="onMarkAllRead()">Mark all read</button>
+    </div>
+
+
+       <div class="notification-list">
+      <div
+        *ngFor="let n of notificationService.notifications$ | async"
+        class="notification-item"
+        [class.unread]="!n.isRead"
+        (click)="onNotificationClick(n.id, n.isRead)">
+        <p>{{ n.message }}</p>
+        <small>{{ n.createdAt | date:'short' }}</small>
+
+           <!-- Show this button only when the notification is read -->
+ <button
+  type="button"
+  class="toggle-btn"
+  (click)="onToggleRead(n); $event.stopPropagation()">
+  {{ n.isRead ? 'Mark as unread' : 'Mark as read' }}
+</button>
+
+      </div>
+
+      <p *ngIf="(notificationService.notifications$ | async)?.length === 0" class="empty">
+        No notifications
+      </p>
+    </div>
+  </div>
+</div>

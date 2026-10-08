@@ -1,0 +1,66 @@
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: #1a1a2e;
+  color: black;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+
+    .brand {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: white;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+
+      a {
+        color: #c9c9d9;
+        text-decoration: none;
+        font-size: 0.95rem;
+
+        &:hover {
+          color: white;
+        }
+
+        &.active {
+          color: white;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .user-name {
+      font-size: 0.9rem;
+      color: #c9c9d9;
+    }
+
+    .logout-btn {
+      background: #e53935;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+
+      &:hover {
+        background: #c62828;
+      }
+    }
+  }
+}
