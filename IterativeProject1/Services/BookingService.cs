@@ -5,16 +5,25 @@ using System.Threading.Tasks;
 using IterativeProject1.DTOs;
 using IterativeProject1.Repositories;
 using IterativeProject1.Models;
+using Microsoft.Extensions.Logging;
+using IterativeProject1.IServices;
 
 namespace IterativeProject1.Services
 {
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _bookingRepository;
+        private readonly INotificationService _notificationService;
+        private readonly ILogger<BookingService> _logger;
 
-        public BookingService(IBookingRepository bookingRepository)
+        public BookingService(
+        IBookingRepository bookingRepository,
+        INotificationService notificationService,
+        ILogger<BookingService> logger)
         {
             _bookingRepository = bookingRepository;
+            _notificationService = notificationService;
+            _logger = logger;
         }
         private static BookingResponseDto MapToDto(Booking booking)
         {
@@ -94,7 +103,18 @@ namespace IterativeProject1.Services
             if (!isOwner && !isAdmin)
                 throw new UnauthorizedAccessException("You cannot cancel this booking");
 
-            return await _bookingRepository.UpdateStatus(bookingId,"Cancelled");
+            var result = await _bookingRepository.UpdateStatus(bookingId, "Cancelled");
+
+            try
+            {
+                await _notificationService.CreateBookingCancelledNotification(booking);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send cancellation notification for booking {BookingId}", booking.Id);
+            }
+
+            return result;
         }
 
         public async Task<BookingResponseDto> Reschedule(int bookingId, int requestingUserId, DateTime newStart, DateTime newEnd)
